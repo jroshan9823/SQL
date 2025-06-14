@@ -1,0 +1,286 @@
+# COMMIT, ROLLBACK, and SAVEPOINT
+
+These commands are crucial for maintaining data integrity by managing transactions. A transaction is a sequence of operations that should be treated as one unit.
+
+# COMMIT:
+Makes changes permanent
+Ends current transaction
+Releases locks
+Can't be rolled back
+
+-- Saves all changes permanently
+COMMIT;
+
+-- Example transaction
+BEGIN TRANSACTION;
+    UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+    UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;
+
+# ROLLBACK:
+Cancels all changes since last COMMIT
+Releases locks
+Ends transaction
+
+-- Undoes all changes since last COMMIT
+ROLLBACK;
+
+ 1. -- Example of error handling
+BEGIN TRANSACTION;
+    UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+    -- If error occurs
+    IF @@ERROR <> 0
+        ROLLBACK;
+    ELSE
+        COMMIT;
+
+2. START TRANSACTION;
+
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+
+-- If no error:
+COMMIT;
+
+-- If error occurred (manually trigger or detect):
+ROLLBACK;
+
+
+3. DELIMITER //
+
+CREATE PROCEDURE transfer_funds()
+BEGIN
+    DECLARE exit handler for SQLEXCEPTION
+    BEGIN
+        -- Error occurred, rollback
+        ROLLBACK;
+    END;
+
+    START TRANSACTION;
+
+    -- Example updates
+    UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+    UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+
+    COMMIT;
+END;
+//
+
+DELIMITER ;
+
+
+# SAVEPOINT:
+Creates markers within transaction
+Allows partial rollbacks
+Multiple savepoints possible
+
+-- Creates a point to roll back to
+SAVEPOINT order_inserted;
+ROLLBACK TO inventory_updated;
+
+-- Example with multiple savepoints
+select * from orders;
+
+start TRANSACTION;
+    INSERT INTO orders VALUES (2001,4,101,2,current_timestamp());
+    SAVEPOINT order_inserted;
+    
+    UPDATE employees SET salary = salary - 1;
+    SAVEPOINT inventory_updated;
+    
+    -- Problem detected, roll back to specific point
+    ROLLBACK TO order_inserted;
+    COMMIT;
+
+
+...................................................
+.......................................................
+# Insert
+
+create table if not exists TCL(
+id int not null primary key auto_increment,
+name varchar(30) not null,
+salary float not null
+);
+
+
+-- Basic syntax
+INSERT INTO TCL (id, name, salary) 
+VALUES (101, 'jroshan',50000);
+
+-- Multiple rows
+INSERT INTO TCL (id, name, salary)
+VALUES 
+    (1, 'John', 50000),
+    (2, 'Mary', 60000);
+
+INSERT INTO employees_backup (id, name, department, salary)
+SELECT id, name, department, salary
+FROM employees
+WHERE department = 'IT';
+
+# Updated 
+-- Begin transaction for safety
+BEGIN TRANSACTION;
+
+-- Test your WHERE clause
+SELECT * FROM employees 
+WHERE Dept_ID = 101;
+
+alter table employees add column salary float ;
+-- If results look correct, perform update
+UPDATE employees 
+SET salary = salary * 1.1
+WHERE Dept_ID = 101;
+
+-- Verify results
+SELECT * FROM employees 
+WHERE Dept_ID = 101;
+
+-- If all looks good
+COMMIT;
+-- If not
+ROLLBACK;
+
+
+# Deleted 
+
+-- Basic syntax
+DELETE FROM table_name
+WHERE condition;
+
+-- Examples
+DELETE FROM employees
+WHERE hire_date < '2020-01-01';
+
+-- Delete with join
+DELETE e 
+FROM employees e
+JOIN departments d ON e.dept_id = d.id
+WHERE d.name = 'Archived';
+
+-- Delete all records
+DELETE FROM table_name;
+-- OR (faster)
+TRUNCATE TABLE table_name;
+
+# WHERE clause:
+
+Always use WHERE for UPDATE/DELETE unless you mean to affect all rows
+Test with SELECT first to verify affected rows
+
+
+# Ceated new database 
+-- Create database
+CREATE DATABASE company;
+
+-- Create table
+CREATE TABLE employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    salary DECIMAL(10,2),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES departments(id)
+);
+
+-- Create index
+CREATE INDEX idx_employee_name 
+ON employees(name);
+
+-- Create view
+CREATE VIEW high_salary_employees AS
+SELECT * FROM employees WHERE salary > 75000;
+
+#  ALTER - Modifies existing objects:
+
+-- Add column
+ALTER TABLE employees
+ADD email VARCHAR(100);
+
+-- Modify column
+ALTER TABLE employees
+MODIFY name VARCHAR(150);  -- Some DBs use ALTER COLUMN
+
+-- Drop column
+ALTER TABLE employees
+DROP COLUMN email;
+
+-- Add constraint
+ALTER TABLE employees
+ADD CONSTRAINT salary_check 
+CHECK (salary > 0);
+
+# RENAME - Changes object names:
+
+-- Rename table
+RENAME TABLE old_name TO new_name;
+-- Or in some DBs:
+ALTER TABLE old_name 
+RENAME TO new_name;
+
+-- Rename column
+ALTER TABLE employees
+RENAME COLUMN old_name TO new_name;
+
+# DROP - Removes database objects:
+
+-- Drop table
+DROP TABLE employees;
+
+-- Drop with safety
+DROP TABLE IF EXISTS employees;
+
+-- Drop database
+DROP DATABASE company;
+
+-- Drop index
+DROP INDEX idx_employee_name;
+
+-- Drop view
+DROP VIEW high_salary_employees;
+
+# TRUNCATE - Removes all records quickly:
+-- Remove all rows
+TRUNCATE TABLE employees;
+
+-- With restart identity (PostgreSQL)
+TRUNCATE TABLE employees RESTART IDENTITY;
+
+
+# Commmon Practice 
+
+use sql_course;
+
+-- Saves all changes permanently
+COMMIT;
+
+-- Example transaction
+Start TRANSACTION;
+    UPDATE employees SET salary = salary - 100 WHERE Dept_ID = 101;
+    UPDATE employees SET salary = salary + 100 WHERE Dept_ID = 104;
+COMMIT;
+
+
+Begin Transaction;
+START TRANSACTION;
+
+-- Step 1: Add column (nullable by default)
+ALTER TABLE employees 
+ADD COLUMN new_column VARCHAR(100);
+
+-- Step 2: Set default value
+UPDATE employees 
+SET new_column = 'default';
+
+-- Step 3: Change to NOT NULL
+ALTER TABLE employees 
+MODIFY COLUMN new_column VARCHAR(100) NOT NULL;
+
+COMMIT;
+
+-- Undoes all changes since last COMMIT
+ROLLBACK;
+
+
+
+
