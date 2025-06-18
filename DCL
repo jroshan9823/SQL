@@ -1,6 +1,14 @@
+Data Control Language (DCL)
 
-DCL stands for Data Control Language, which is a subset of SQL (Structured Query Language) used to control access to data in a database. 
-DCL commands manage user permissions and security by granting or revoking privileges on database objects.
+1. Data Control Language (DCL) is used to control access and manage user permissions within a database. 
+2. It ensures data security and determines who can perform operations like data manipulation and retrieval.
+3. DCL stands for Data Control Language, which is a subset of SQL (Structured Query Language) used to control access to data in a database. 
+4. DCL commands manage user permissions and security by granting or revoking privileges on database objects.
+
+5. GRANT: Assigns specific privileges (like SELECT, INSERT, UPDATE, DELETE) to users or roles.
+6. REVOKE: Removes previously granted privileges from users or roles.
+7. DCL ensures that only authorized individuals have access to sensitive data.
+
 
 ## Main DCL Commands
 # 1. GRANT Command
