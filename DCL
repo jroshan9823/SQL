@@ -66,3 +66,50 @@ Document permission changes
 Remove unused privileges promptly
 
 Would you like me to elaborate on any specific aspect of GRANT and REVOKE?
+
+
+-- Create analyst user
+CREATE USER 'analyst1'@'localhost' IDENTIFIED BY 'password123';
+
+-- Create inventory manager user
+CREATE USER 'inventory1'@'localhost' IDENTIFIED BY 'password123';
+
+-- Create full access admin user
+CREATE USER 'retail_admin'@'localhost' IDENTIFIED BY 'adminpass';
+
+
+📊 GRANT SELECT to Analyst
+GRANT SELECT ON retail_db.* TO 'analyst1'@'localhost';
+
+📦 GRANT SELECT, INSERT, UPDATE on inventory to Inventory Manager
+GRANT SELECT, INSERT, UPDATE ON retail_db.product_inventory TO 'inventory1'@'localhost';
+
+🛠️ GRANT ALL to Admin
+GRANT ALL PRIVILEGES ON retail_db.* TO 'retail_admin'@'localhost' WITH GRANT OPTION;
+
+❌ Step 3: REVOKE Permissions
+❌ REVOKE INSERT from inventory1
+
+REVOKE INSERT ON retail_db.product_inventory FROM 'inventory1'@'localhost';
+
+❌ REVOKE ALL from analyst
+
+REVOKE ALL PRIVILEGES ON retail_db.* FROM 'analyst1'@'localhost';
+
+🔍 Check Permissions
+SHOW GRANTS FOR 'inventory1'@'localhost';
+
+
+✅ Example Use Case Test
+
+-- Success
+SELECT * FROM product_inventory;
+
+-- Success
+UPDATE product_inventory SET quantity = 10 WHERE product_id = 301;
+
+-- Fails (INSERT was revoked)
+INSERT INTO product_inventory (product_id, quantity) VALUES (999, 20);
+
+
+
