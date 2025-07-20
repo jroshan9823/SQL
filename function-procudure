@@ -213,6 +213,7 @@ SELECT employee_count_by_dept(2) AS emp_total;
 
 DELIMITER $$
 
+# -- Function: Validate Email Format
 CREATE FUNCTION is_valid_email(email VARCHAR(255))
 RETURNS TINYINT
 DETERMINISTIC
@@ -231,7 +232,7 @@ SELECT 'test@example.com' AS email, is_valid_email('test@example.com') AS is_val
 
 DELIMITER $$
 
--- Function: Get Department Name
+# ---- Function: Get Department Name
 CREATE FUNCTION get_dept_name(p_dept_id INT)
 RETURNS VARCHAR(50)
 DETERMINISTIC
@@ -249,7 +250,7 @@ SELECT get_dept_name(1) AS dept;
 
 
 
--- Procedure: Promote Employee
+# -- Procedure: Promote Employee
 -- Increase salary by a fixed amount and log the promotion in an audit table.
 
 CREATE TABLE promotions_audit (
@@ -291,7 +292,7 @@ SELECT * FROM promotions_audit;
 
 
 
--- Bulk Salary Adjustment by Department
+# -- Bulk Salary Adjustment by Department
 -- Increase all employees’ salaries in a given department by a percentage.
 
 
